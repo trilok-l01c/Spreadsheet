@@ -2,7 +2,7 @@ const range = (start, end) => Array(end - start + 1).fill(start).map((element, i
 const charRange = (start, end) => range(start.charCodeAt(0), end.charCodeAt(0)).map(code => String.fromCharCode(code));
 
 const sum = nums => nums.reduce((el, acc) => el + acc, 0);
-// const subtract = nums => nums.reduce((el, acc) => el - acc, 0);
+const count = nums => nums.length;
 const isEven = num => !(num%2);
 const average = nums => sum(nums)/nums.length;
 const median = nums => {
@@ -25,7 +25,9 @@ const evalFormula = (cells, x) => {
 const spreadsheetFuncs = {
     sum,
     average,
-    median
+    median,
+    count,
+    
 }
 window.onload = () => {
     const colHeaders = document.getElementById("col-head");

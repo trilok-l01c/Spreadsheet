@@ -70,7 +70,6 @@ window.onload = () => {
     const rowHeaders = document.getElementById("row-head");
     const container = document.getElementById("container");
 
-    // Making labels 
     const createLabel = (name, clss, par) => {
         const label = document.createElement("div");
         label.className = clss;
@@ -79,7 +78,7 @@ window.onload = () => {
         return label;
     };
 
-    // Create column headers labels(A-J)
+    // Create column headers (A-J)
     const letters = charRange("A", "J");
     letters.forEach((el) => {
         createLabel(el, "column-header", colHeaders);

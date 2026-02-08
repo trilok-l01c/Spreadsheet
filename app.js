@@ -11,17 +11,32 @@ const inFixFunctions = {
 // function to apply infix functions
 const infixEval = (str, regex) =>
     str.replace(regex, (_, arg1, OP, arg2) =>
-        inFixFunctions.OP(parseFloat(arg1), parseFloat(arg2)),
+        inFixFunctions[OP](parseFloat(arg1), parseFloat(arg2)),
     );
 
 // a function to check of precedense
 const highPrecedence = (str) => {
-    // regex to match a infix expression
+    // regex to match a infix expression with mulitply or divide
     const regex = /([\d.]+)([*\/])([\d.]+)/;
     const s = infixEval(str, regex);
     return s === str ? str : highPrecedence(s);
 };
 
+const applyFunction = (str) => {
+    const noHigh = highPrecedence(str);
+    // a regex for checking addition or subtraction
+    const infix = /([\d.]+)([+-])([\d.]+)/;
+    const str2 = infixEval(noHigh, infix);
+    const functionCall = / /i;
+    const toNumberList = (args) => args.split(",").map(parseFloat);
+    const apply = (fn, args) =>
+        spreadsheetFuncs[fn.toLowerCase()](toNumberList(args));
+    return str2.replace(
+        functionCall,
+        // need to add here a call back function
+        () => {},
+    );
+};
 // setting range of cols, vertical numbering
 const range = (start, end) =>
     Array(end - start + 1)
@@ -52,7 +67,7 @@ const median = (nums) => {
 // function to evaluate formulas applied
 const evalFormula = (cells, x) => {
     const idToText = (id) => cells.find((cell) => cell.id === id).value;
-    const rangeRegex = /([A-J])([1-9][0-9]?):([A-J])([1-9][0-9]?)/gi;
+    const rangeRegex = /([A-Z])([1-9][0-9]?):([A-Z])([1-9][0-9]?)/gi;
     const rangeFromString = (num1, num2) => range(parseInt(num1, num2));
     const elemVal = (num) => (char) => idToText(char + num); // convert the
     const addcharacters = (char1) => (char2) => (num) =>

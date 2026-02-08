@@ -1,14 +1,17 @@
-// infix function to calculate basic mathematical operations like add, sub, mul, and div
+// infix function to calculate basic mathematical operations like add, sub, mul, and div local in each cell
 const inFixFunctions = {
     "+": (x, y) => x + y,
     "-": (x, y) => x - y,
     "*": (x, y) => x * y,
     "/": (x, y) => x / y,
+    "%": (x, y) => x % y,
+    "^": (x, y) => x ** y,
 };
+
 // function to apply infix functions
 const infixEval = (str, regex) =>
-    str.replace(regex, (_, arg1, op, arg2) =>
-        inFixFunctions.op(parseFloat(arg1), parseFloat(arg2))
+    str.replace(regex, (_, arg1, OP, arg2) =>
+        inFixFunctions.OP(parseFloat(arg1), parseFloat(arg2)),
     );
 
 // a function to check of precedense
@@ -27,7 +30,7 @@ const range = (start, end) =>
 // setting range of rows, horizontal alphabating
 const charRange = (start, end) =>
     range(start.charCodeAt(0), end.charCodeAt(0)).map((code) =>
-        String.fromCharCode(code)
+        String.fromCharCode(code),
     );
 
 // sum function for the whole range of array
@@ -70,16 +73,16 @@ window.onload = () => {
     const rowHeaders = document.getElementById("row-head");
     const container = document.getElementById("container");
 
-    const createLabel = (name, clss, par) => {
+    const createLabel = (name, className, par) => {
         const label = document.createElement("div");
-        label.className = clss;
+        label.className = className;
         label.textContent = name;
         par.appendChild(label);
         return label;
     };
 
     // Create column headers (A-J)
-    const letters = charRange("A", "J");
+    const letters = charRange("A", "Z");
     letters.forEach((el) => {
         createLabel(el, "column-header", colHeaders);
     });

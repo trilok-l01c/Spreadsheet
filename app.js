@@ -27,14 +27,17 @@ const applyFunction = (str) => {
     // a regex for checking addition or subtraction
     const infix = /([\d.]+)([+-])([\d.]+)/;
     const str2 = infixEval(noHigh, infix);
-    const functionCall = / /i;
+    // #########################
+    const functionCall = / /i; // Add regex
+    // ##########################
     const toNumberList = (args) => args.split(",").map(parseFloat);
     const apply = (fn, args) =>
         spreadsheetFuncs[fn.toLowerCase()](toNumberList(args));
     return str2.replace(
         functionCall,
-        // need to add here a call back function
-        () => {},
+        // ##################################################################
+        () => {}, // need to add here a callback function here
+        // ##################################################################
     );
 };
 // setting range of cols, vertical numbering

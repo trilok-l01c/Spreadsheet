@@ -22,24 +22,6 @@ const highPrecedence = (str) => {
     return s === str ? str : highPrecedence(s);
 };
 
-const applyFunction = (str) => {
-    const noHigh = highPrecedence(str);
-    // a regex for checking addition or subtraction
-    const infix = /([\d.]+)([+-])([\d.]+)/;
-    const str2 = infixEval(noHigh, infix);
-    // #########################
-    const functionCall = / /i; // Add regex
-    // ##########################
-    const toNumberList = (args) => args.split(",").map(parseFloat);
-    const apply = (fn, args) =>
-        spreadsheetFuncs[fn.toLowerCase()](toNumberList(args));
-    return str2.replace(
-        functionCall,
-        // ##################################################################
-        () => {}, // need to add here a callback function here
-        // ##################################################################
-    );
-};
 // setting range of cols, vertical numbering
 const range = (start, end) =>
     Array(end - start + 1)
@@ -67,23 +49,71 @@ const median = (nums) => {
     else return sorted[Math.ceil(mid)];
 };
 
-// function to evaluate formulas applied
-const evalFormula = (cells, x) => {
-    const idToText = (id) => cells.find((cell) => cell.id === id).value;
-    const rangeRegex = /([A-Z])([1-9][0-9]?):([A-Z])([1-9][0-9]?)/gi;
-    const rangeFromString = (num1, num2) => range(parseInt(num1, num2));
-    const elemVal = (num) => (char) => idToText(char + num); // convert the
-    const addcharacters = (char1) => (char2) => (num) =>
-        charRange(char1, char2).map(elemVal(num));
-    const rangeExpanded = x.replace(rangeRegex);
-};
-// object of spreadsheet funcitons
 const spreadsheetFuncs = {
+    "": (arg) => arg,
     sum,
     average,
     median,
-    count,
+    even: (nums) => nums.filter(isEven),
+    someeven: (nums) => nums.some(isEven),
+    everyeven: (nums) => nums.every(isEven),
+    firsttwo: (nums) => nums.slice(0, 2),
+    lasttwo: (nums) => nums.slice(-2),
+    has2: (nums) => nums.includes(2),
+    increment: (nums) => nums.map((num) => num + 1),
+    random: ([x, y]) => Math.floor(Math.random() * y + x),
+    range: (nums) => range(...nums),
+    nodupes: (nums) => [...new Set(nums).values()],
 };
+
+const applyFunction = (str) => {
+    const noHigh = highPrecedence(str);
+    // a regex for checking addition or subtraction
+    const infix = /([\d.]+)([+-])([\d.]+)/;
+    const str2 = infixEval(noHigh, infix);
+    // a regex for
+    const functionCall = /([a-z0-9]*)\(([0-9., ]*)\)(?!.*\()/i;
+    const toNumberList = (args) => args.split(",").map(parseFloat);
+    const apply = (fn, args) =>
+        spreadsheetFuncs[fn.toLowerCase()](toNumberList(args));
+    return str2.replace(
+        functionCall,
+        // applying function, on having the operator available or return the string as it is.
+        (match, fn, args) =>
+            spreadsheetFuncs.hasOwnProperty(fn.toLowerCase())
+                ? apply(fn, args)
+                : match,
+    );
+};
+
+// #######  EXPLAIN THE FUNCTIONING OF THIS FUNCTION?  ##############
+// *************************************************************************************************
+const evalFormula = (cells, x) => {
+    const idToText = (id) => cells.find((cell) => cell.id === id).value;
+    const rangeRegex = /([A-J])([1-9][0-9]?):([A-J])([1-9][0-9]?)/gi;
+    const rangeFromString = (num1, num2) =>
+        range(parseInt(num1), parseInt(num2));
+    const elemVal = (num) => (char) => idToText(char + num); // convert the
+    const addCharacters = (char1) => (char2) => (num) =>
+        charRange(char1, char2).map(elemVal(num));
+    // adding more
+
+    const rangeExpanded = x.replace(
+        rangeRegex,
+        (_match, char1, num1, char2, num2) =>
+            rangeFromString(num1, num2).map(addCharacters(char1)(char2)),
+    );
+    const cellRegex = /[A-J][1-9][0-9]?/gi;
+    const cellExpanded = rangeExpanded.replace(cellRegex, (match) =>
+        idToText(match.toUpperCase()),
+    );
+    const functionExpanded = applyFunction(cellExpanded);
+    return functionExpanded === x
+        ? functionExpanded
+        : evalFormula(cells, functionExpanded);
+};
+
+// ***************************************************************************************************
 
 // loading window
 window.onload = () => {
@@ -100,7 +130,7 @@ window.onload = () => {
     };
 
     // Create column headers (A-J)
-    const letters = charRange("A", "Z");
+    const letters = charRange("A", "J");
     letters.forEach((el) => {
         createLabel(el, "column-header", colHeaders);
     });
@@ -116,6 +146,7 @@ window.onload = () => {
             cell.type = "text";
             cell.id = letter + number;
             cell.ariaLabel = letter + number;
+            cell.onchange = update;
             container.appendChild(cell);
         });
     });
@@ -125,5 +156,9 @@ const update = (event) => {
     const element = event.target;
     const value = element.value.replace(/\s/g, "");
     if (!value.includes(element.id) && value[0] === "=") {
+        element.value = evalFormula(
+            Array.from(document.getElementById("container").children),
+            value.slice(1),
+        );
     }
 };
